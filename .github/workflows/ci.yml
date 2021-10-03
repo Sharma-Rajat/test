@@ -43,7 +43,7 @@ jobs:
           echo "TRIGGER_BRANCH=test2" >> $GITHUB_ENV
 
       - name: Next
-        if: (github.event_name != 'push')
+        if: (github.event_name == 'pull_request_target')
         run: |
           git branch ${{env.TRIGGER_BRANCH}} ${{ github.event.pull_request.head.sha }}
           git push origin ${{env.TRIGGER_BRANCH}}
@@ -104,8 +104,8 @@ jobs:
           #   exit 1
           # fi
 
-      # - name: Clean up
-      #   if: ${{ github.event_name == 'pull_request_target' }}
-      #   run: |
-      #     git branch -d ${{env.TRIGGER_BRANCH}}
-      #     git push origin --delete ${{env.TRIGGER_BRANCH}}
+      - name: Clean up
+        if: ${{ github.event_name == 'pull_request_target' }}
+        run: |
+          git branch -d ${{env.TRIGGER_BRANCH}}
+          git push origin --delete ${{env.TRIGGER_BRANCH}}
