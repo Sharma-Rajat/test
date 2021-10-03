@@ -44,7 +44,7 @@ jobs:
           echo "TRIGGER_BRANCH=test2" >> $GITHUB_ENV
 
       - name: Next
-        if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+        if: github.event.pull_request.head.repo.full_name != github.repository && github.actor != 'dependabot[bot]'
         run: |
           git branch ${{env.TRIGGER_BRANCH}} ${{ github.event.pull_request.head.sha }}
           git push origin ${{env.TRIGGER_BRANCH}}
