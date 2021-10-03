@@ -1,8 +1,10 @@
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
   gitlab-ci:
     runs-on: ubuntu-latest
+
+    if: github.event.pull_request.head.repo.full_name != github.repository && github.actor != 'dependabot[bot]'
 
     container:
       image:  alpine/git
@@ -13,38 +15,23 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v2
-      # - name: Assign Trigger Branch Context (!Fork PR)
-      #   if: ${{ github.event_name != 'pull_request_target' }}
-      #   run: |
-      #     echo "{TRIGGER_BRANCH}={${{env.GITHUB_HEAD_REF_SLUG}}}" >> $GITHUB_ENV
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      # if pr is from a fork repo, create a mirror branch in gitlab
-      # - name: Assign Trigger Branch Context (Fork PR)
-      #   # if: ${{ github.event_name != 'pull_request_target' }}
-      #   run: |
-      #     echo ${{ github.event.pull_request.head.sha }}
-      #     echo ${{github.event.pull_request.head.repo.full_name}}
-      #     echo ${{env.GITHUB_REF_NAME}}
-      #     git status -sb
-        # echo "{TRIGGER_BRANCH}={${{github.event.pull_request.number}}-${{env.GITHUB_REF_NAME}}}" >> $GITHUB_ENV
-        # git branch ${{env.TRIGGER_BRANCH}} ${{ github.event.pull_request.head.sha }}
-        # git push origin ${{env.TRIGGER_BRANCH}}
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+           key: ${{ secrets.SSH_PRIVATE_KEY }}
+           known_hosts: ${{ secrets.KNOWN_HOSTS }}
 
-      - name: Assign Trigger Branch Context (Fork PR)
-        if: (github.event_name != 'push')
+      - name: Mirror Forked Merge Branch
         run: |
           echo "TRIGGER_BRANCH='${{github.event.pull_request.number}}-${{env.GITHUB_REF_NAME}}'" >> $GITHUB_ENV
 
-      - name: Next
-        if: github.event.pull_request.head.repo.full_name != github.repository && github.actor != 'dependabot[bot]'
-        run: |
-          git branch ${{env.TRIGGER_BRANCH}}
-          git push origin ${{env.TRIGGER_BRANCH}}
-
-      # - name: Update Mirror
-          # if: ${{ github.event_name != 'pull_request_target' }}
-      #   run: |
-      #     curl -X POST https://*******/projects/elexis%2Felexis-3-core/mirror/pull
+          git remote add gitlab git@gitlab.com:jdalrymple/test
+          git branch '${{github.event.pull_request.number}}-${{env.GITHUB_REF_NAME}}'
+          git push --force -u gitlab
+        # git push --force gitlab pull/${{ github.event.pull_request.number }}
 
       # - name: Await CI/CD Pipeline
           # run: |
