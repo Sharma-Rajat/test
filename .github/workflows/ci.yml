@@ -40,9 +40,10 @@ jobs:
           echo ${{github.event.pull_request.head.repo.full_name}}
           echo ${{env.GITHUB_REF_NAME}}
           git status -sb
-          echo "TRIGGER_BRANCH=test" >> $GITHUB_ENV
-          git branch ${{env.TRIGGER_BRANCH}} ${{ github.event.pull_request.head.sha }}
-          git push origin ${{env.TRIGGER_BRANCH}}
+          echo "TRIGGER_BRANCH=$('test')" >> $GITHUB_ENV
+          echo "${{ env.TRIGGER_BRANCH }}"
+        # git branch ${{env.TRIGGER_BRANCH}} ${{ github.event.pull_request.head.sha }}
+        # git push origin ${{env.TRIGGER_BRANCH}}
 
 
 
